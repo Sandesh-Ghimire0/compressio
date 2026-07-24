@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import fs from "fs";
+import { ApiError } from "../../../utils/apiError.js";
 
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
@@ -39,7 +40,8 @@ class CompressService {
                     resolve(outputPath);
                 } else {
                     reject(
-                        new Error(
+                        new ApiError(
+                            500,
                             `FFmpeg exited with code ${code}: ${stderrOutput.slice(-500)}`,
                         ),
                     );
