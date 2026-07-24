@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useState } from "react";
 
 const Upload = () => {
@@ -19,15 +20,24 @@ const Upload = () => {
         setFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
         if (files.length === 0)
             return alert("Please select at least one video file");
         // TODO: send files to your backend/API here
-        console.log(
-            "Uploading:",
-            files.map((f) => f.name),
+
+        const formData = new FormData();
+        files.forEach((file) => {
+            formData.append("videos", file);
+        });
+
+        const res = await axios.post(
+            `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress`,
+            formData,
         );
+        if (res.status === 200) {
+            console.log("Upload successfull");
+        }
     };
 
     return (
