@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import Upload from "./pages/Upload";
+import Compress from "./pages/Compress";
 import Archive from "./pages/Archive";
 import MainLayout from "./components/MainLayout";
 
@@ -9,8 +9,8 @@ function App() {
             <div>
                 <Routes>
                     <Route element={<MainLayout />}>
-                        <Route path="/" element={<Upload />} />
-                        <Route path="/upload" element={<Upload />} />
+                        <Route path="/" element={<Compress />} />
+                        <Route path="/compress" element={<Compress />} />
                         <Route path="/archive" element={<Archive />} />
                     </Route>
                 </Routes>

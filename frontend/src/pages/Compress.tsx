@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useState } from "react";
 
-const Upload = () => {
+const Compress = () => {
     const [files, setFiles] = useState<File[]>([]);
 
     const isDuplicate = (file: File) => {
@@ -93,11 +93,11 @@ const Upload = () => {
                     className="w-full bg-neutral-200 text-neutral-900 font-medium
             py-2 rounded-lg hover:bg-neutral-300 transition-colors"
                 >
-                    Upload {files.length > 0 && `(${files.length})`}
+                    Compress {files.length > 0 && `(${files.length})`}
                 </button>
             </form>
         </div>
     );
 };
 
-export default Upload;
+export default Compress;
