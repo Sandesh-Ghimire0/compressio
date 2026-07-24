@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+/* const neutralTheme = {
+  // Surfaces
+  bgCanvas:      'bg-neutral-950',   // #0a0a0a — Main app background
+  bgCard:        'bg-neutral-900',   // #171717 — Surface containers / panels
+  bgHover:       'hover:bg-neutral-800/80', // Interactive hover state
+  bgElevated:    'bg-neutral-800',   // #262626 — Modals, popovers, dropdowns
+
+  // Borders
+  borderSubtle:  'border-neutral-800',// #262626 — Default card outlines
+  borderStrong:  'border-neutral-700',// #404040 — Focus rings, active dividers
+
+  // Typography
+  textPrimary:   'text-neutral-100', // #f5f5f5 — Main headings & titles
+  textSecondary: 'text-neutral-400', // #a3a3a3 — Body text & descriptions
+  textMuted:     'text-neutral-500', // #737373 — Placeholders, disabled states
+}; */
