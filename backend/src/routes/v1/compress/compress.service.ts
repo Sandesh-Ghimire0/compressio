@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import fs from "fs";
 import { ApiError } from "../../../utils/apiError.js";
+import { ZipArchive } from "archiver";
 
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
@@ -52,6 +53,24 @@ class CompressService {
                 reject(err);
             });
         });
+    }
+
+    archiveAndStreamCompressedVideos(
+        files: { outputPath: string; originalName: string }[],
+        res: NodeJS.WritableStream,
+    ) {
+        const archive = new ZipArchive();
+        archive.on("error", (err) => {
+            throw err;
+        });
+
+        archive.pipe(res);
+
+        for (const { outputPath, originalName } of files) {
+            archive.file(outputPath, { name: originalName });
+        }
+
+        return archive.finalize();
     }
 
     async compressBatch(files: Express.Multer.File[]) {
