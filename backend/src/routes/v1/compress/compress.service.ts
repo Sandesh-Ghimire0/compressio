@@ -55,21 +55,20 @@ class CompressService {
     }
 
     async compressBatch(files: Express.Multer.File[]) {
-        const results = await Promise.all(
-            files.map(async (file) => {
-                const outputPath = path.join(
-                    compressedDir,
-                    `compressed-${file.originalname}`,
-                );
-                await this.ffmpegCompress(file.path, outputPath);
-                return {
-                    outputPath,
-                    originalName: file.originalname,
-                    inputPath: file.path,
-                };
-            }),
-        );
+        const compressPromises = files.map(async (file) => {
+            const outputPath = path.join(
+                compressedDir,
+                `compressed-${file.originalname}`,
+            );
+            await this.ffmpegCompress(file.path, outputPath);
+            return {
+                outputPath,
+                originalName: file.originalname,
+                inputPath: file.path,
+            };
+        });
 
+        const results = await Promise.all(compressPromises);
         return results;
     }
 }
