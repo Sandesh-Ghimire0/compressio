@@ -23,6 +23,8 @@
         "typescript": "^7.0.2"
     },
     "dependencies": {
+        "@aws-sdk/client-s3": "^3.1095.0",
+        "@aws-sdk/lib-storage": "^3.1095.0",
         "archiver": "^8.0.0",
         "cors": "^2.8.6",
         "dotenv": "^17.4.2",

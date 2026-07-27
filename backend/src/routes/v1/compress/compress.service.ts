@@ -1,13 +1,20 @@
+import "dotenv/config";
+
 import { spawn } from "node:child_process";
 import path from "node:path";
 import fs from "fs";
 import { ApiError } from "../../../utils/apiError.js";
 import { ZipArchive } from "archiver";
-
+import { S3Client } from "@aws-sdk/client-s3";
+import { PassThrough } from "node:stream";
+import { Upload } from "@aws-sdk/lib-storage";
+import { arch } from "node:os";
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
     fs.mkdirSync(compressedDir, { recursive: true });
 }
+
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
 class CompressService {
     ffmpegCompress(inputPath: string, outputPath: string): Promise<string> {
@@ -55,7 +62,7 @@ class CompressService {
         });
     }
 
-    archiveAndStreamCompressedVideos(
+    async archiveAndStreamCompressedVideos(
         files: { outputPath: string; originalName: string }[],
         res: NodeJS.WritableStream,
     ) {
@@ -64,13 +71,29 @@ class CompressService {
             throw err;
         });
 
+        const s3Stream = new PassThrough();
+        const s3Key = `archives/${new Date().toISOString()}-compressed-videos.zip`;
+
         archive.pipe(res);
+        archive.pipe(s3Stream);
+
+        const s3Upload = new Upload({
+            client: s3Client,
+            params: {
+                Bucket: process.env.S3_BUCKET,
+                Key: s3Key,
+                Body: s3Stream,
+                ContentType: "application/zip",
+            },
+        });
+
+        const uploadPromise = s3Upload.done();
 
         for (const { outputPath, originalName } of files) {
             archive.file(outputPath, { name: originalName });
         }
 
-        return archive.finalize();
+        await Promise.all([archive.finalize(), uploadPromise]);
     }
 
     async compressBatch(files: Express.Multer.File[]) {

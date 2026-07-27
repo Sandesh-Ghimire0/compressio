@@ -10,6 +10,7 @@ export const compressVideo = asyncHandler(async (req, res) => {
         const results = await compressService.compressBatch(files);
         res.attachment("compressed-videos.zip");
         await compressService.archiveAndStreamCompressedVideos(results, res);
+        
 
         results.forEach((r) => {
             fs.unlink(r.inputPath, () => {});
