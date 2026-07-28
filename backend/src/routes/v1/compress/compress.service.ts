@@ -9,12 +9,11 @@ import { S3Client } from "@aws-sdk/client-s3";
 import { PassThrough } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import { arch } from "node:os";
+import { s3Client } from "../../../app.js";
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
     fs.mkdirSync(compressedDir, { recursive: true });
 }
-
-const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
 class CompressService {
     ffmpegCompress(inputPath: string, outputPath: string): Promise<string> {
