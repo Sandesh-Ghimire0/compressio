@@ -56,46 +56,58 @@ const Compress = () => {
     };
 
     return (
-        <div className="flex flex-col items-center gap-4 justify-center">
-            <div className="px-4">
-                <form
-                    onSubmit={handleSubmit}
-                    className="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4"
-                >
-                    <label
-                        htmlFor="upload-file"
-                        className="block text-sm font-medium text-neutral-300"
+        <>
+            <div className="flex justify-center mb-4">
+                <div className="">
+                    <form
+                        onSubmit={handleSubmit}
+                        className="w-full max-w-sm bg-neutral-900 border border-neutral-800 rounded-xl p-6 space-y-4"
                     >
-                        Upload video files
-                    </label>
+                        <label
+                            htmlFor="upload-file"
+                            className="block text-sm font-medium text-neutral-300"
+                        >
+                            Upload video files
+                        </label>
 
-                    <input
-                        type="file"
-                        id="upload-file"
-                        accept=".mp4,.mov,.avi,.mkv,.webm"
-                        multiple
-                        onChange={handleFileChange}
-                        className="block w-full text-sm text-neutral-400
-                        file:mr-4 file:py-2 file:px-4
-                        file:rounded-lg file:border-0
-                        file:text-sm file:font-medium
-                        file:bg-neutral-800 file:text-neutral-200
-                        hover:file:bg-neutral-700
-                        cursor-pointer"
-                    />
+                        <input
+                            type="file"
+                            id="upload-file"
+                            accept=".mp4,.mov,.avi,.mkv,.webm"
+                            multiple
+                            onChange={handleFileChange}
+                            className="block w-full text-sm text-neutral-400
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-lg file:border-0
+                            file:text-sm file:font-medium
+                            file:bg-neutral-800 file:text-neutral-200
+                            hover:file:bg-neutral-700
+                            cursor-pointer"
+                        />
 
-                    {files.length > 0 && status !== "ready" && (
-                        <ul className="space-y-1 max-h-40 overflow-y-auto">
-                            {files.map((file, i) => (
-                                <li
-                                    key={`${file.name}-${i}`}
-                                    className={`flex items-center gap-10 justify-between text-xs text-neutral-400 bg-neutral-800 
-                                        rounded-md px-3 py-2 ${status === "processing" ? "animate-pulse" : ""}`}
-                                >
-                                    <span className="truncate">
-                                        {file.name}
-                                    </span>
-                                    {status === "idle" ? (
+                        <button
+                            type="submit"
+                            className="w-full bg-neutral-200 text-neutral-900 font-medium
+                    py-2 rounded-lg hover:bg-neutral-300 transition-colors"
+                            disabled={status === "processing"}
+                        >
+                            {status === "processing"
+                                ? "compressing...."
+                                : "compress"}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div>
+                <div className=" bg-neutral-800 p-4 rounded-md">
+                    <p>Uploaded files</p>
+                    <ul className="grid grid-cols-3 gap-4 ">
+                        {files.map((file, i) => (
+                            <>
+                                <li className="flex flex-col gap-4 justify-between bg-neutral-700 p-4 rounded-xl">
+                                    <div className="flex justify-between">
+                                        <p>{file.name} </p>
                                         <button
                                             type="button"
                                             onClick={() => removeFile(i)}
@@ -103,30 +115,29 @@ const Compress = () => {
                                         >
                                             ✕
                                         </button>
+                                    </div>
+
+                                    <div className="flex justify-between">
+                                        <p>Type: {file.type}</p>
+                                        <p>Size: {(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                    </div>
+
+                                    <div>
+                                        <progress value={75} max={100} />
+                                        <span className="ml-2">75%</span>
+                                    </div>
+                                    {/* {status === "idle" ? (
+                                        
                                     ) : (
                                         <p className="text-slate-400 text-xs">
-                                            compressing...
+                                            29%
                                         </p>
-                                    )}
+                                    )} */}
                                 </li>
-                            ))}
-                        </ul>
-                    )}
-
-                    <button
-                        type="submit"
-                        className="w-full bg-neutral-200 text-neutral-900 font-medium
-                    py-2 rounded-lg hover:bg-neutral-300 transition-colors"
-                        disabled={status === "processing"}
-                    >
-                        {status === "processing"
-                            ? "compressing...."
-                            : "compress"}
-                    </button>
-                </form>
-            </div>
-
-            <div>
+                            </>
+                        ))}
+                    </ul>
+                </div>
                 {downloadUrl && status === "ready" && (
                     <div className="text-slate-400">
                         <p>
@@ -148,7 +159,7 @@ const Compress = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 
