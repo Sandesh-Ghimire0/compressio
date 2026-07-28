@@ -68,14 +68,16 @@ class CompressService {
     ) {
         const archive = new ZipArchive();
         archive.on("error", (err) => {
+            // TODO: return error response
             throw err;
         });
 
+        for (const { outputPath, originalName } of files) {
+            archive.file(outputPath, { name: originalName });
+        }
+
         const s3Stream = new PassThrough();
         const s3Key = `archives/${new Date().toISOString()}-compressed-videos.zip`;
-
-        archive.pipe(res);
-        archive.pipe(s3Stream);
 
         const s3Upload = new Upload({
             client: s3Client,
@@ -87,13 +89,15 @@ class CompressService {
             },
         });
 
-        const uploadPromise = s3Upload.done();
+        archive.pipe(s3Stream);
+        archive.pipe(res);
 
-        for (const { outputPath, originalName } of files) {
-            archive.file(outputPath, { name: originalName });
-        }
-
-        await Promise.all([archive.finalize(), uploadPromise]);
+        await Promise.all([archive.finalize(), s3Upload.done()]).catch(
+            (error) => {
+                // TODO : Return error response
+                console.log("Failed to archive :: ", error);
+            },
+        );
     }
 
     async compressBatch(files: Express.Multer.File[]) {
