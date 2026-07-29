@@ -11,6 +11,25 @@ interface Archive {
 const Archive = () => {
     const [archives, setArchives] = useState<Archive[]>([]);
 
+    const generatePresingedUrl = async (key: string) => {
+        try {
+            const res = await axios.get(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/archives/presigned-url?key=${key}`,
+            );
+
+            if (res.data.statusCode === 200) {
+                console.log(res.data.data);
+                const a = document.createElement("a");
+                a.href = res.data.data;
+                a.download = key;
+
+                a.click();
+            }
+        } catch (error) {
+            console.log("Error while generating presigned URL :: ", error);
+        }
+    };
+
     const fetchArchives = async () => {
         try {
             const res = await axios.get(
@@ -47,7 +66,14 @@ const Archive = () => {
                                         <FolderArchive />
                                         <p>{a.key}</p>
                                     </div>
-                                    <Download color="lightblue" />
+                                    <div
+                                        className="cursor-pointer hover:bg-blue-400 hover:rounded-full"
+                                        onClick={() =>
+                                            generatePresingedUrl(a.key)
+                                        }
+                                    >
+                                        <Download color="lightblue" />
+                                    </div>
                                 </div>
 
                                 <p>

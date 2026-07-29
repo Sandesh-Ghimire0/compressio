@@ -16,3 +16,20 @@ export const fetchArchives = asyncHandler(async (req, res) => {
             new ApiResponse(200, results, "Successfully fetched the archives"),
         );
 });
+
+export const generatePresignedUrl = asyncHandler(async (req, res) => {
+    const { key } = req.query;
+    if (!key) {
+        throw new ApiError(400, "Key is required");
+    }
+
+    const url = await archiveService.getPresingedUrl(key as string);
+
+    if (!url) {
+        throw new ApiError(500, "Failed to generate the presinged url");
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, url, "Url generated successfully"));
+});
