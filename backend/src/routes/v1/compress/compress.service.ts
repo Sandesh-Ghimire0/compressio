@@ -1,63 +1,71 @@
 import "dotenv/config";
 
-import { spawn } from "node:child_process";
 import path from "node:path";
 import fs from "fs";
 import { ApiError } from "../../../utils/apiError.js";
 import { ZipArchive } from "archiver";
-import { S3Client } from "@aws-sdk/client-s3";
+import { EventEmitter } from "events";
+
 import { PassThrough } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
-import { arch } from "node:os";
 import { s3Client } from "../../../app.js";
+import ffmpeg from "fluent-ffmpeg";
+
+import { Response } from "express";
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
     fs.mkdirSync(compressedDir, { recursive: true });
 }
 
+export const progressEmitter = new EventEmitter();
+
 class CompressService {
-    ffmpegCompress(inputPath: string, outputPath: string): Promise<string> {
+    sendProgressEvent(res: Response, event: string, num: string) {
+        res.set({
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive",
+        });
+
+        let message = "";
+        message += "event: progress\n";
+        message += `data: ${num}\n\n`;
+
+        res.write("data: Connected\n\n");
+        res.write(message);
+    }
+
+    ffmpegCompress(
+        jobId: string,
+        inputPath: string,
+        outputPath: string,
+    ): Promise<string> {
         return new Promise((resolve, reject) => {
-            const args = [
-                "-i",
-                inputPath,
-                "-c:v",
-                "libx264",
-                "-crf",
-                "28",
-                "-preset",
-                "medium",
-                "-c:a",
-                "aac",
-                "-b:a",
-                "128k",
-                "-y",
-                outputPath,
-            ];
-
-            const proc = spawn("ffmpeg", args);
-
-            let stderrOutput = "";
-            proc.stderr.on("data", (chunk) => {
-                stderrOutput += chunk.toString();
-            });
-
-            proc.on("close", (code) => {
-                if (code === 0) {
-                    resolve(outputPath);
-                } else {
-                    reject(
-                        new ApiError(
-                            500,
-                            `FFmpeg exited with code ${code}: ${stderrOutput.slice(-500)}`,
-                        ),
+            ffmpeg(inputPath)
+                .videoCodec("libx264")
+                .outputOptions(["-crf 28", "-preset medium"])
+                .audioCodec("aac")
+                .audioBitrate("128k")
+                .on("progress", (progress) => {
+                    // TODO ; stream progress to client
+                    process.stdout.write(
+                        `\rProgress: ${progress.percent?.toFixed(1)}%`,
                     );
-                }
-            });
-
-            proc.on("error", (err) => {
-                reject(err);
-            });
+                    progressEmitter.emit(jobId, {
+                        progress: progress.percent?.toFixed(1),
+                    });
+                })
+                .on("end", () => {
+                    process.stdout.write("\rProgress: 100.0%\n");
+                    resolve(outputPath);
+                    progressEmitter.emit(jobId, {
+                        progress: 100,
+                    });
+                })
+                .on("error", (err) => {
+                    reject(new ApiError(500, `FFmpeg error: ${err.message}`));
+                })
+                .save(outputPath);
         });
     }
 
@@ -99,13 +107,13 @@ class CompressService {
         );
     }
 
-    async compressBatch(files: Express.Multer.File[]) {
+    async compressBatch(files: Express.Multer.File[], jobId: string) {
         const compressPromises = files.map(async (file) => {
             const outputPath = path.join(
                 compressedDir,
                 `compressed-${file.originalname}`,
             );
-            await this.ffmpegCompress(file.path, outputPath);
+            await this.ffmpegCompress(jobId, file.path, outputPath);
             return {
                 outputPath,
                 originalName: file.originalname,

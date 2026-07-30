@@ -8,6 +8,7 @@ const Compress = () => {
     const [status, setStatus] = useState<
         "idle" | "processing" | "ready" | "error"
     >("idle");
+    const [progress, setProgress] = useState(0);
 
     const isDuplicate = (file: File) => {
         return files.some((f) => f.name === file.name && f.size === file.size);
@@ -33,10 +34,24 @@ const Compress = () => {
         // TODO: send files to your backend/API here
 
         try {
+            const jobId = crypto.randomUUID();
+            const eventSource = new EventSource(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress/progress/${jobId}`,
+            );
+            eventSource.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+                setProgress(data);
+            };
+
+            eventSource.onerror = () => {
+                eventSource.close();
+            };
+
             const formData = new FormData();
             files.forEach((file) => {
                 formData.append("videos", file);
             });
+            formData.append("jobId", jobId);
 
             const res = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress`,
@@ -100,8 +115,18 @@ const Compress = () => {
             </div>
 
             <div>
-                <div className=" bg-neutral-800 p-4 rounded-md">
-                    <p>Uploaded files</p>
+                <div className="bg-neutral-800 p-4 rounded-md">
+                    <div className="flex w-full items-center justify-between gap-4">
+                        <p className="shrink-0">Uploaded files</p>
+                        <div className="flex items-center flex-1">
+                            <progress
+                                value={progress}
+                                max={100}
+                                className="bg-blue-400 flex-1"
+                            />
+                            <span className="ml-2 shrink-0">{progress}%</span>
+                        </div>
+                    </div>
                     <ul className="grid grid-cols-3 gap-4 ">
                         {files.map((file, i) => (
                             <>
@@ -119,13 +144,16 @@ const Compress = () => {
 
                                     <div className="flex justify-between">
                                         <p>Type: {file.type}</p>
-                                        <p>Size: {(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                                        <p>
+                                            Size:{" "}
+                                            {(
+                                                file.size /
+                                                (1024 * 1024)
+                                            ).toFixed(2)}{" "}
+                                            MB
+                                        </p>
                                     </div>
 
-                                    <div>
-                                        <progress value={75} max={100} />
-                                        <span className="ml-2">75%</span>
-                                    </div>
                                     {/* {status === "idle" ? (
                                         
                                     ) : (

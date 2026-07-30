@@ -18,7 +18,6 @@ const Archive = () => {
             );
 
             if (res.data.statusCode === 200) {
-                console.log(res.data.data);
                 const a = document.createElement("a");
                 a.href = res.data.data;
                 a.download = key;

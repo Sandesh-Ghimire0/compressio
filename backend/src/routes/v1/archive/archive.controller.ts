@@ -5,7 +5,6 @@ import { archiveService } from "./archive.service.js";
 
 export const fetchArchives = asyncHandler(async (req, res) => {
     const results = await archiveService.getAllVideoArchives();
-    console.log(results);
     if (!results) {
         throw new ApiError(500, "Something went wrong while fetching archives");
     }
