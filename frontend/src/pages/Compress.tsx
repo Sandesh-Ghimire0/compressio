@@ -40,6 +40,7 @@ const Compress = () => {
             );
             eventSource.onmessage = function (event) {
                 const data = JSON.parse(event.data);
+                console.log(data)
                 setProgress(data);
             };
 

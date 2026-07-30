@@ -20,20 +20,6 @@ if (!fs.existsSync(compressedDir)) {
 export const progressEmitter = new EventEmitter();
 
 class CompressService {
-    sendProgressEvent(res: Response, event: string, num: string) {
-        res.set({
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive",
-        });
-
-        let message = "";
-        message += "event: progress\n";
-        message += `data: ${num}\n\n`;
-
-        res.write("data: Connected\n\n");
-        res.write(message);
-    }
 
     ffmpegCompress(
         jobId: string,
