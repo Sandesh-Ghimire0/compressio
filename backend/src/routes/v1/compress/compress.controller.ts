@@ -6,10 +6,24 @@ import fs from "fs";
 
 export const compressVideo = asyncHandler(async (req, res) => {
     const files = req.files as Express.Multer.File[];
-    const { jobId } = req.body;
 
-    if (files) {
-        const results = await compressService.compressBatch(files, jobId);
+    // should always be array even if there is only one jobId
+    // because later in forEach() loop jobIds[i] is being used
+    let jobIds = req.body.jobIds;
+    if (typeof jobIds === "string") {
+        jobIds = [jobIds];
+    }
+
+    // TODO : validation of files and jobIds presence
+
+    const jobs = new Map<string, Express.Multer.File>();
+
+    files.forEach((file, i) => {
+        jobs.set(jobIds[i], file);
+    });
+
+    if (jobs) {
+        const results = await compressService.compressBatch(jobs);
         res.attachment("compressed-videos.zip");
         await compressService.archiveAndStreamCompressedVideos(results, res);
 
@@ -31,7 +45,7 @@ export const sendProgress = asyncHandler(async (req, res) => {
 
     if (typeof jobId === "string") {
         progressEmitter.on(jobId, (data) => {
-            res.write(`data: ${JSON.stringify(data.progress)}\n\n`);
+            res.write(`data: ${JSON.stringify(data)}\n\n`);
         });
     } else {
         throw new ApiError(400, "jobId should be string, invalid format");

@@ -11,7 +11,6 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../../../app.js";
 import ffmpeg from "fluent-ffmpeg";
 
-import { Response } from "express";
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
     fs.mkdirSync(compressedDir, { recursive: true });
@@ -20,7 +19,6 @@ if (!fs.existsSync(compressedDir)) {
 export const progressEmitter = new EventEmitter();
 
 class CompressService {
-
     ffmpegCompress(
         jobId: string,
         inputPath: string,
@@ -33,18 +31,19 @@ class CompressService {
                 .audioCodec("aac")
                 .audioBitrate("128k")
                 .on("progress", (progress) => {
-                    // TODO ; stream progress to client
-                    process.stdout.write(
-                        `\rProgress: ${progress.percent?.toFixed(1)}%`,
+                    console.log(
+                        `Progress-${jobId}: ${progress.percent?.toFixed(1)}%`,
                     );
                     progressEmitter.emit(jobId, {
+                        jobId: jobId,
                         progress: progress.percent?.toFixed(1),
                     });
                 })
                 .on("end", () => {
-                    process.stdout.write("\rProgress: 100.0%\n");
+                    console.log(`Progress-${jobId}: 100.0%\n`);
                     resolve(outputPath);
                     progressEmitter.emit(jobId, {
+                        jobId: jobId,
                         progress: 100,
                     });
                 })
@@ -93,8 +92,8 @@ class CompressService {
         );
     }
 
-    async compressBatch(files: Express.Multer.File[], jobId: string) {
-        const compressPromises = files.map(async (file) => {
+    async compressBatch(jobs: Map<string, Express.Multer.File>) {
+        const compressPromises = [...jobs].map(async ([jobId, file]) => {
             const outputPath = path.join(
                 compressedDir,
                 `compressed-${file.originalname}`,
