@@ -31,16 +31,12 @@ class CompressService {
                 .audioCodec("aac")
                 .audioBitrate("128k")
                 .on("progress", (progress) => {
-                    console.log(
-                        `Progress-${jobId}: ${progress.percent?.toFixed(1)}%`,
-                    );
                     progressEmitter.emit(jobId, {
                         jobId: jobId,
-                        progress: progress.percent?.toFixed(1),
+                        progress: Number(progress.percent?.toFixed(1)) || 0,
                     });
                 })
                 .on("end", () => {
-                    console.log(`Progress-${jobId}: 100.0%\n`);
                     resolve(outputPath);
                     progressEmitter.emit(jobId, {
                         jobId: jobId,

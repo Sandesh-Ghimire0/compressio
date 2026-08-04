@@ -14,7 +14,9 @@ export const compressVideo = asyncHandler(async (req, res) => {
         jobIds = [jobIds];
     }
 
-    // TODO : validation of files and jobIds presence
+    if (jobIds.length === 0 || files.length === 0) {
+        throw new ApiError(400, "Files and JobIds is required");
+    }
 
     const jobs = new Map<string, Express.Multer.File>();
 
