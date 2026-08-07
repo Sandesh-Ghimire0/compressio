@@ -11,6 +11,7 @@ app.use(
         origin: process.env.FRONTEND_URL,
     }),
 );
+app.use(express.static("public"))
 app.use(express.json());
 
 app.get("/health", (req, res) => {
