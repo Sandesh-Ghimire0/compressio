@@ -1,6 +1,5 @@
 import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { s3Client } from "../../../app.js";
-import { sign } from "node:crypto";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 class ArchiveService {

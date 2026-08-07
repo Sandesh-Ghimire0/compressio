@@ -54,7 +54,7 @@ const Compress = () => {
         try {
             files.forEach((file) => {
                 const eventSource = new EventSource(
-                    `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress/progress/${file.jobId}`,
+                    `/api/v1/compress/progress/${file.jobId}`,
                 );
                 eventSource.onmessage = function (event) {
                     const data = JSON.parse(event.data);
@@ -86,7 +86,7 @@ const Compress = () => {
             });
 
             const res = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress`,
+                `/api/v1/compress`,
                 formData,
                 {
                     responseType: "blob",
