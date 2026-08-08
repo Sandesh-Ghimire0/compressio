@@ -37,16 +37,16 @@ jobs:
           script: |
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/compressio:latest
             docker stop compressio || true
-            docker rm compressio
+            docker rm compressio || true
             docker run -d \
-              --name compressio
+              --name compressio \
               -p 80:8000 \
-              -e PORT=
-              -e FRONTEND_URL=http://localhost:5173
-              -e AWS_REGION=ap-southeast-1
-              -e AWS_ACCESS_KEY_ID=AKIAZSO54NXB72N4RCBG
-              -e AWS_SECRET_ACCESS_KEY=Mh0sesX3id+ZpR6JKM05xqyJ8RLWtVI6OkGMn
-              -e S3_BUCKET=compressio-archives
+              -e PORT=8000 \
+              -e FRONTEND_URL=http://localhost:5173 \
+              -e AWS_REGION=ap-southeast-1 \
+              -e AWS_ACCESS_KEY_ID=AKIAZSO54NXB72N4RCBG \
+              -e AWS_SECRET_ACCESS_KEY=Mh0sesX3id+ZpR6JKM05xqyJ8RLWtVI6OkGMn \
+              -e S3_BUCKET=compressio-archives \
               ${{ secrets.DOCKERHUB_USERNAME }}/compressio:latest
 
 
