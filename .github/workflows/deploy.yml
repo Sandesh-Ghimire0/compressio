@@ -41,7 +41,7 @@ jobs:
             docker run -d \
               --name compressio \
               -p 80:8000 \
-              -e PORT=8000 \  
+              -e PORT=8000 \
               -e FRONTEND_URL=http://localhost:5173 \
               -e AWS_REGION=${{ secrets.AWS_REGION }} \
               -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
