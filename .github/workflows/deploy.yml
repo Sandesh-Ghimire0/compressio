@@ -41,12 +41,12 @@ jobs:
             docker run -d \
               --name compressio \
               -p 80:8000 \
-              -e PORT=8000 \
+              -e PORT=8000 \  
               -e FRONTEND_URL=http://localhost:5173 \
-              -e AWS_REGION=ap-southeast-1 \
-              -e AWS_ACCESS_KEY_ID=AKIAZSO54NXB72N4RCBG \
-              -e AWS_SECRET_ACCESS_KEY=Mh0sesX3id+ZpR6JKM05xqyJ8RLWtVI6OkGMn \
-              -e S3_BUCKET=compressio-archives \
+              -e AWS_REGION=${{ secrets.AWS_REGION }} \
+              -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+              -e S3_BUCKET=${{ secrets.S3_BUCKET }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/compressio:latest
 
 
