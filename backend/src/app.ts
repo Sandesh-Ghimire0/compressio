@@ -1,17 +1,21 @@
 import express from "express";
 import cors from "cors";
+import { fileURLToPath } from "url";
+import { S3Client } from "@aws-sdk/client-s3";
 
 export const app = express();
 
 export const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(
     cors({
         origin: process.env.FRONTEND_URL,
     }),
 );
-app.use(express.static("public"))
+app.use(express.static("public"));
 app.use(express.json());
 
 app.get("/health", (req, res) => {
@@ -20,6 +24,12 @@ app.get("/health", (req, res) => {
 
 // -------------------------------------------------
 import { v1Router } from "./routes/v1/index.js";
-import { S3Client } from "@aws-sdk/client-s3";
+import path from "path";
 
 app.use("/api/v1", v1Router);
+
+
+// on reload displays the static index.html page instead rendering routes of express backend
+app.use((req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+});
