@@ -40,9 +40,9 @@ jobs:
             docker rm compressio || true
             docker run -d \
               --name compressio \
-              -p 80:8000 \
+              -p 8000:8000 \
               -e PORT=8000 \
-              -e FRONTEND_URL=http://localhost:5173 \
+              -e FRONTEND_URL=https://54.254.227.240.nip.io \
               -e AWS_REGION=${{ secrets.AWS_REGION }} \
               -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
               -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
