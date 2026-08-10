@@ -14,7 +14,7 @@ const Archive = () => {
     const generatePresingedUrl = async (key: string) => {
         try {
             const res = await axios.get(
-                `/api/v1/archives/presigned-url?key=${key}`,
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/archives/presigned-url?key=${key}`,
             );
 
             if (res.data.statusCode === 200) {
@@ -32,7 +32,7 @@ const Archive = () => {
     const fetchArchives = async () => {
         try {
             const res = await axios.get(
-                `/api/v1/archives`,
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/archives`,
             );
 
             if (res.data.statusCode === 200) {
