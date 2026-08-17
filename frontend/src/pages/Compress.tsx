@@ -41,8 +41,8 @@ const Compress = () => {
         setFiles((prev) => [...prev, ...filesWithJobId]);
     };
 
-    const removeFile = (index: number) => {
-        setFiles((prev) => prev.filter((_, i) => i !== index));
+    const removeFile = (jobId: string) => {
+        setFiles((prev) => prev.filter((f) => f.jobId !== jobId));
     };
 
     const handleSubmit = async (e: React.SubmitEvent) => {
@@ -58,7 +58,6 @@ const Compress = () => {
                 );
                 eventSource.onmessage = function (event) {
                     const data = JSON.parse(event.data);
-                    console.log(data);
                     setFiles((prev) =>
                         prev.map((f) => {
                             if (f.jobId === data.jobId) {
@@ -88,16 +87,14 @@ const Compress = () => {
             const res = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress`,
                 formData,
-                {
-                    responseType: "blob",
-                },
             );
-            const url = URL.createObjectURL(res.data);
 
-            setDownloadUrl(url);
-            setStatus("ready");
-        } catch (error) {
-            console.log("compresssion failed: ", error);
+            if (res.data.statusCode === 200) {
+                setDownloadUrl(res.data.data);
+                setStatus("ready");
+            }
+        } catch (error: any) {
+            console.log("Compressoion Failed :: ", error);
             setStatus("error");
         }
     };
@@ -152,7 +149,7 @@ const Compress = () => {
                     <div className="flex flex-col justify-center gap-4 bg-neutral-800 p-4 rounded-md">
                         <p className="shrink-0 text-center">Uploaded files</p>
                         <ul className="grid grid-cols-3 gap-4 ">
-                            {files.map((file, i) => (
+                            {files.map((file) => (
                                 <li
                                     key={file.jobId}
                                     className="flex flex-col gap-4 justify-between bg-neutral-700 p-4 rounded-xl"
@@ -161,7 +158,9 @@ const Compress = () => {
                                         <p>{file.name} </p>
                                         <button
                                             type="button"
-                                            onClick={() => removeFile(i)}
+                                            onClick={() =>
+                                                removeFile(file.jobId)
+                                            }
                                             className="ml-2 text-neutral-500 hover:text-neutral-200"
                                         >
                                             ✕

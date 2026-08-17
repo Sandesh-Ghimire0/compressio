@@ -52,7 +52,6 @@ class CompressService {
 
     async archiveAndStreamCompressedVideos(
         files: { outputPath: string; originalName: string }[],
-        res: NodeJS.WritableStream,
     ) {
         const archive = new ZipArchive();
         archive.on("error", (err) => {
@@ -78,7 +77,6 @@ class CompressService {
         });
 
         archive.pipe(s3Stream);
-        archive.pipe(res);
 
         await Promise.all([archive.finalize(), s3Upload.done()]).catch(
             (error) => {
@@ -86,6 +84,8 @@ class CompressService {
                 console.log("Failed to archive :: ", error);
             },
         );
+
+        return s3Key
     }
 
     async compressBatch(jobs: Map<string, Express.Multer.File>) {

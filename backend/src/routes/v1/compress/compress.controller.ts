@@ -1,8 +1,9 @@
-import { EventEmitter } from "stream";
 import { ApiError } from "../../../utils/apiError.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { compressService, progressEmitter } from "./compress.service.js";
 import fs from "fs";
+import { archiveService } from "../archive/archive.service.js";
+import { ApiResponse } from "../../../utils/apiResponse.js";
 
 export const compressVideo = asyncHandler(async (req, res) => {
     const files = req.files as Express.Multer.File[];
@@ -24,15 +25,30 @@ export const compressVideo = asyncHandler(async (req, res) => {
         jobs.set(jobIds[i], file);
     });
 
+    console.log(files);
     if (jobs) {
         const results = await compressService.compressBatch(jobs);
         res.attachment("compressed-videos.zip");
-        await compressService.archiveAndStreamCompressedVideos(results, res);
+
+        // this will directly stream the response
+        const key =
+            await compressService.archiveAndStreamCompressedVideos(results);
+        const preSignedURl = await archiveService.getPresingedUrl(key);
 
         results.forEach((r) => {
             fs.unlink(r.inputPath, () => {});
             fs.unlink(r.outputPath, () => {});
         });
+
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    preSignedURl,
+                    "Compressed completed and URL generated",
+                ),
+            );
     } else {
         throw new ApiError(400, "Files not available");
     }

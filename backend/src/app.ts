@@ -30,6 +30,8 @@ app.use("/api/v1", v1Router);
 
 
 // on reload displays the static index.html page instead rendering routes of express backend
-app.use((req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "index.html"));
-});
+if (process.env.NODE_ENV === "production") {
+    app.use((req, res) => {
+        res.sendFile(path.join(__dirname, "..", "public", "index.html"));
+    });
+}
