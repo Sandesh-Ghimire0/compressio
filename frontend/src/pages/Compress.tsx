@@ -52,31 +52,32 @@ const Compress = () => {
             return alert("Please select at least one video file");
 
         try {
-            files.forEach((file) => {
-                const eventSource = new EventSource(
-                    `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress/progress/${file.jobId}`,
-                );
-                eventSource.onmessage = function (event) {
-                    const data = JSON.parse(event.data);
-                    setFiles((prev) =>
-                        prev.map((f) => {
-                            if (f.jobId === data.jobId) {
-                                return {
-                                    ...f,
-                                    progress: data.progress,
-                                };
-                            }
-                            return f;
-                        }),
-                    );
-                };
-
-                // TODO: add done event listerner emitted from backend
-
-                eventSource.onerror = () => {
+            const eventSource = new EventSource(
+                `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress/progress`,
+            );
+            eventSource.onmessage = function (event) {
+                if (event.data === "end") {
                     eventSource.close();
-                };
-            });
+                    return;
+                }
+                const data = JSON.parse(event.data);
+
+                setFiles((prev) =>
+                    prev.map((f) => {
+                        if (f.jobId === data.jobId) {
+                            return {
+                                ...f,
+                                progress: data.progress,
+                            };
+                        }
+                        return f;
+                    }),
+                );
+            };
+
+            eventSource.onerror = () => {
+                eventSource.close();
+            };
 
             const formData = new FormData();
             files.forEach((file) => {

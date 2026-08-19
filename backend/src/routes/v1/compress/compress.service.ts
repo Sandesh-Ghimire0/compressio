@@ -31,14 +31,14 @@ class CompressService {
                 .audioCodec("aac")
                 .audioBitrate("128k")
                 .on("progress", (progress) => {
-                    progressEmitter.emit(jobId, {
+                    progressEmitter.emit("compress", {
                         jobId: jobId,
                         progress: Number(progress.percent?.toFixed(1)) || 0,
                     });
                 })
                 .on("end", () => {
                     resolve(outputPath);
-                    progressEmitter.emit(jobId, {
+                    progressEmitter.emit("compress", {
                         jobId: jobId,
                         progress: 100,
                     });
@@ -103,6 +103,8 @@ class CompressService {
         });
 
         const results = await Promise.all(compressPromises);
+
+        progressEmitter.emit("end")
         return results;
     }
 }

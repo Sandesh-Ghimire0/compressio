@@ -25,7 +25,6 @@ export const compressVideo = asyncHandler(async (req, res) => {
         jobs.set(jobIds[i], file);
     });
 
-    console.log(files);
     if (jobs) {
         const results = await compressService.compressBatch(jobs);
         res.attachment("compressed-videos.zip");
@@ -58,18 +57,17 @@ export const sendProgress = asyncHandler(async (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.flushHeaders(); // send header immediately to the client
 
-    const { jobId } = req.params;
+    progressEmitter.on("compress", (data) => {
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+    });
 
-    if (typeof jobId === "string") {
-        progressEmitter.on(jobId, (data) => {
-            res.write(`data: ${JSON.stringify(data)}\n\n`);
-        });
-    } else {
-        throw new ApiError(400, "jobId should be string, invalid format");
-    }
+    progressEmitter.on("end", (data) => {
+        res.write(`data: end\n\n`);
+    });
 
     req.on("close", () => {
-        progressEmitter.removeAllListeners(jobId as string);
+        progressEmitter.removeAllListeners();
     });
 });
