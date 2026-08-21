@@ -47,9 +47,10 @@ const Compress = () => {
 
     const handleSubmit = async (e: React.SubmitEvent) => {
         e.preventDefault();
-        setStatus("processing");
         if (files.length === 0)
             return alert("Please select at least one video file");
+
+        setStatus("processing");
 
         try {
             const eventSource = new EventSource(
