@@ -1,22 +1,13 @@
 import "dotenv/config";
 
-import path from "node:path";
-import fs from "fs";
 import { ApiError } from "../../../utils/apiError.js";
 import { ZipArchive } from "archiver";
-import { EventEmitter } from "events";
 
 import { PassThrough } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../../../app.js";
 import ffmpeg from "fluent-ffmpeg";
-
-const compressedDir = "tmp/compressed";
-if (!fs.existsSync(compressedDir)) {
-    fs.mkdirSync(compressedDir, { recursive: true });
-}
-
-export const progressEmitter = new EventEmitter();
+import { progressEmitter } from "./compress.event.js";
 
 class CompressService {
     ffmpegCompress(
@@ -85,28 +76,28 @@ class CompressService {
             },
         );
 
-        return s3Key
+        return s3Key;
     }
 
-    async compressBatch(jobs: Map<string, Express.Multer.File>) {
-        const compressPromises = [...jobs].map(async ([jobId, file]) => {
-            const outputPath = path.join(
-                compressedDir,
-                `compressed-${file.originalname}`,
-            );
-            await this.ffmpegCompress(jobId, file.path, outputPath);
-            return {
-                outputPath,
-                originalName: file.originalname,
-                inputPath: file.path,
-            };
-        });
+    // async compressBatch(jobs: Map<string, Express.Multer.File>) {
+    //     const compressPromises = [...jobs].map(async ([jobId, file]) => {
+    //         const outputPath = path.join(
+    //             compressedDir,
+    //             `compressed-${file.originalname}`,
+    //         );
+    //         await this.ffmpegCompress(jobId, file.path, outputPath);
+    //         return {
+    //             outputPath,
+    //             originalName: file.originalname,
+    //             inputPath: file.path,
+    //         };
+    //     });
 
-        const results = await Promise.all(compressPromises);
+    //     const results = await Promise.all(compressPromises);
 
-        progressEmitter.emit("end")
-        return results;
-    }
+    //     progressEmitter.emit("end")
+    //     return results;
+    // }
 }
 
 export const compressService = new CompressService();

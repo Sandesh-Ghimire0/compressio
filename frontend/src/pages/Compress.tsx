@@ -92,8 +92,8 @@ const Compress = () => {
             );
 
             if (res.data.statusCode === 200) {
-                setDownloadUrl(res.data.data);
-                setStatus("ready");
+                // setDownloadUrl(res.data.data);
+                // setStatus("ready");
             }
         } catch (error: any) {
             console.log("Compressoion Failed :: ", error);

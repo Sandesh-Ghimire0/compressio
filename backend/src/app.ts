@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import { S3Client } from "@aws-sdk/client-s3";
+import "./routes/v1/compress/compress.worker.js"; // without this worker will not execute
 
 export const app = express();
 
@@ -27,7 +28,6 @@ import { v1Router } from "./routes/v1/index.js";
 import path from "path";
 
 app.use("/api/v1", v1Router);
-
 
 // on reload displays the static index.html page instead rendering routes of express backend
 if (process.env.NODE_ENV === "production") {
