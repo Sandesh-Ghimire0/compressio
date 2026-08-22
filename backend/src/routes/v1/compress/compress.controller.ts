@@ -27,7 +27,7 @@ export const compressVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Files and JobIds is required");
     }
 
-    const jobs = files.map((file, i) => {
+    const filesMetaData = files.map((file, i) => {
         return {
             jobId: jobIds[i],
             inputPath: file.path,
@@ -39,7 +39,8 @@ export const compressVideo = asyncHandler(async (req, res) => {
         };
     });
 
-    await Promise.all(jobs.map((job) => videoQueue.add("compress-video", job)));
+    // await Promise.all(jobs.map((job) => videoQueue.add("compress-video", job)));
+    await compressService.compressAndArchive(filesMetaData);
     return res
         .status(200)
         .json(new ApiResponse(200, [], "Videos added to the queue"));

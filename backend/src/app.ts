@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import { fileURLToPath } from "url";
 import { S3Client } from "@aws-sdk/client-s3";
-import "./routes/v1/compress/compress.worker.js"; // without this worker will not execute
 
 export const app = express();
 

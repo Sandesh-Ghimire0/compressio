@@ -8,6 +8,9 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../../../app.js";
 import ffmpeg from "fluent-ffmpeg";
 import { progressEmitter } from "./compress.event.js";
+import { flowProducer, VIDEO_QUEUE_NAME } from "./compress.queue.js";
+import { ARCHIVE_QUEUE_NAME } from "../archive/archive.queue.js";
+import { JobData } from "./compress.type.js";
 
 class CompressService {
     ffmpegCompress(
@@ -41,7 +44,7 @@ class CompressService {
         });
     }
 
-    async archiveAndStreamCompressedVideos(
+    async archiveAndCompresseVideos(
         files: { outputPath: string; originalName: string }[],
     ) {
         const archive = new ZipArchive();
@@ -77,6 +80,18 @@ class CompressService {
         );
 
         return s3Key;
+    }
+
+    async compressAndArchive(files: JobData[]) {
+        await flowProducer.add({
+            name: "archive-videos",
+            queueName: ARCHIVE_QUEUE_NAME,
+            children: files.map((file) => ({
+                name: "compress-video",
+                queueName: VIDEO_QUEUE_NAME,
+                data: file,
+            })),
+        });
     }
 
     // async compressBatch(jobs: Map<string, Express.Multer.File>) {

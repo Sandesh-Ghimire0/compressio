@@ -2,7 +2,6 @@ import { Worker } from "bullmq";
 import { VIDEO_QUEUE_NAME } from "./compress.queue.js";
 import { redisConnection } from "../../../config/redis.js";
 import ffmpeg from "fluent-ffmpeg";
-import { JobData } from "./compress.type.js";
 
 const worker = new Worker(
     VIDEO_QUEUE_NAME,

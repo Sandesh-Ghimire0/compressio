@@ -1,4 +1,4 @@
-import { Queue, QueueEvents } from "bullmq";
+import { FlowProducer, Queue, QueueEvents } from "bullmq";
 import { redisConnection } from "../../../config/redis.js";
 
 export const VIDEO_QUEUE_NAME = "video-compression";
@@ -10,3 +10,5 @@ export const videoQueue = new Queue(VIDEO_QUEUE_NAME, {
 export const videoQueueEvents = new QueueEvents(VIDEO_QUEUE_NAME, {
     connection: redisConnection,
 });
+
+export const flowProducer = new FlowProducer({ connection: redisConnection });

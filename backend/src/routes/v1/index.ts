@@ -2,6 +2,9 @@ import { Router } from "express";
 import { compressRouter } from "./compress/compress.route.js";
 import { archiveRouter } from "./archive/archive.route.js";
 
+import "./compress/compress.worker.js";
+import "./archive/archive.worker.js"
+
 const v1Router = Router();
 
 v1Router.use("/compress", compressRouter);
