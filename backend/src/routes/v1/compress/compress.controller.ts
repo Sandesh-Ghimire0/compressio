@@ -2,11 +2,9 @@ import { ApiError } from "../../../utils/apiError.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { compressService } from "./compress.service.js";
 import fs from "fs";
-import { archiveService } from "../archive/archive.service.js";
 import { ApiResponse } from "../../../utils/apiResponse.js";
 import { progressEmitter } from "./compress.event.js";
 import path from "path";
-import { videoQueue } from "./compress.queue.js";
 
 const compressedDir = "tmp/compressed";
 if (!fs.existsSync(compressedDir)) {
@@ -70,11 +68,11 @@ export const sendProgress = asyncHandler(async (req, res) => {
     res.flushHeaders(); // send header immediately to the client
 
     progressEmitter.on("compress", (data) => {
-        res.write(`data: ${JSON.stringify(data)}\n\n`);
+        res.write(`event: progress\ndata: ${JSON.stringify(data)}\n\n`);
     });
 
     progressEmitter.on("end", (data) => {
-        res.write(`data: end\n\n`);
+        res.write(`event: end\ndata: ${JSON.stringify(data)}\n\n`);
     });
 
     req.on("close", () => {

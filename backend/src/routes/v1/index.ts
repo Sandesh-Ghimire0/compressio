@@ -3,7 +3,8 @@ import { compressRouter } from "./compress/compress.route.js";
 import { archiveRouter } from "./archive/archive.route.js";
 
 import "./compress/compress.worker.js";
-import "./archive/archive.worker.js"
+import "./archive/archive.worker.js";
+import "./archive/archive.events.js"
 
 const v1Router = Router();
 

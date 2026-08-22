@@ -5,8 +5,6 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 export const app = express();
 
-export const s3Client = new S3Client({ region: process.env.AWS_REGION });
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

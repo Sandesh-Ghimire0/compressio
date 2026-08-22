@@ -1,6 +1,6 @@
 import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
-import { s3Client } from "../../../app.js";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { s3Client } from "../../../config/s3.js";
 
 class ArchiveService {
     async getAllVideoArchives() {

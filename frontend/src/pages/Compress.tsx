@@ -56,11 +56,8 @@ const Compress = () => {
             const eventSource = new EventSource(
                 `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress/progress`,
             );
-            eventSource.onmessage = function (event) {
-                if (event.data === "end") {
-                    eventSource.close();
-                    return;
-                }
+
+            eventSource.addEventListener("progress", (event) => {
                 const data = JSON.parse(event.data);
 
                 setFiles((prev) =>
@@ -74,7 +71,34 @@ const Compress = () => {
                         return f;
                     }),
                 );
-            };
+            });
+
+            eventSource.addEventListener("end", (event) => {
+                const data = JSON.parse(event.data);
+                setDownloadUrl(data.preSignedUrl);
+                setStatus("ready");
+
+                eventSource.close();
+            });
+            // eventSource.onmessage = function (event) {
+            //     if (event.data === "end") {
+            //         eventSource.close();
+            //         return;
+            //     }
+            //     const data = JSON.parse(event.data);
+
+            //     setFiles((prev) =>
+            //         prev.map((f) => {
+            //             if (f.jobId === data.jobId) {
+            //                 return {
+            //                     ...f,
+            //                     progress: data.progress,
+            //                 };
+            //             }
+            //             return f;
+            //         }),
+            //     );
+            // };
 
             eventSource.onerror = () => {
                 eventSource.close();
