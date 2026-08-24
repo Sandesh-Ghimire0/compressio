@@ -15,5 +15,17 @@ services:
     depends_on:
       - redis
 
+  compressio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    restart: unless-stopped
+    
+
+
 volumes:
   redis-data:

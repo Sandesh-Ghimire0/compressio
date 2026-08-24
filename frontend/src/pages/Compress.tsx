@@ -54,7 +54,7 @@ const Compress = () => {
 
         try {
             const eventSource = new EventSource(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress/progress`,
+                `/api/v1/compress/progress`,
             );
 
             eventSource.addEventListener("progress", (event) => {
@@ -111,7 +111,7 @@ const Compress = () => {
             });
 
             const res = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/api/v1/compress`,
+                `/api/v1/compress`,
                 formData,
             );
 

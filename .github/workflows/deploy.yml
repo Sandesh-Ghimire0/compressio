@@ -35,20 +35,9 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/compressio:latest
-            docker stop compressio || true
-            docker rm compressio || true
-            docker run -d \
-              --name compressio \
-              -p 8000:8000 \
-              -e PORT=8000 \
-              -e FRONTEND_URL=https://18.136.94.223.nip.io \
-              -e AWS_REGION=${{ secrets.AWS_REGION }} \
-              -e AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-              -e AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-              -e S3_BUCKET=${{ secrets.S3_BUCKET }} \
-              --restart unless-stopped \
-              ${{ secrets.DOCKERHUB_USERNAME }}/compressio:latest
+            cd ~/compressio
+            docker compose pull
+            docker compose up -d
 
 
 
