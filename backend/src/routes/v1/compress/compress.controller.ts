@@ -1,8 +1,15 @@
-import { EventEmitter } from "stream";
 import { ApiError } from "../../../utils/apiError.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
-import { compressService, progressEmitter } from "./compress.service.js";
+import { compressService } from "./compress.service.js";
 import fs from "fs";
+import { ApiResponse } from "../../../utils/apiResponse.js";
+import { progressEmitter } from "./compress.event.js";
+import path from "path";
+
+const compressedDir = "tmp/compressed";
+if (!fs.existsSync(compressedDir)) {
+    fs.mkdirSync(compressedDir, { recursive: true });
+}
 
 export const compressVideo = asyncHandler(async (req, res) => {
     const files = req.files as Express.Multer.File[];
@@ -18,42 +25,57 @@ export const compressVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Files and JobIds is required");
     }
 
-    const jobs = new Map<string, Express.Multer.File>();
-
-    files.forEach((file, i) => {
-        jobs.set(jobIds[i], file);
+    const filesMetaData = files.map((file, i) => {
+        return {
+            jobId: jobIds[i],
+            inputPath: file.path,
+            outputPath: path.join(
+                compressedDir,
+                `compressed-${file.originalname}`,
+            ),
+            originalName: file.originalname,
+        };
     });
 
-    if (jobs) {
-        const results = await compressService.compressBatch(jobs);
-        res.attachment("compressed-videos.zip");
-        await compressService.archiveAndStreamCompressedVideos(results, res);
+    // await Promise.all(jobs.map((job) => videoQueue.add("compress-video", job)));
+    await compressService.compressAndArchive(filesMetaData);
+    return res
+        .status(200)
+        .json(new ApiResponse(200, [], "Videos added to the queue"));
 
-        results.forEach((r) => {
-            fs.unlink(r.inputPath, () => {});
-            fs.unlink(r.outputPath, () => {});
-        });
-    } else {
-        throw new ApiError(400, "Files not available");
-    }
+    // if (jobs) {
+    //     const results = await compressService.compressBatch(jobs);
+
+    //     // this will directly stream the response
+    //     const key =
+    //         await compressService.archiveAndStreamCompressedVideos(results);
+    //     const preSignedURl = await archiveService.getPresingedUrl(key);
+
+    //     results.forEach((r) => {
+    //         fs.unlink(r.inputPath, () => {});
+    //         fs.unlink(r.outputPath, () => {});
+    //     });
+
+    // } else {
+    //     throw new ApiError(400, "Files not available");
+    // }
 });
 
 export const sendProgress = asyncHandler(async (req, res) => {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
+    res.flushHeaders(); // send header immediately to the client
 
-    const { jobId } = req.params;
+    progressEmitter.on("compress", (data) => {
+        res.write(`event: progress\ndata: ${JSON.stringify(data)}\n\n`);
+    });
 
-    if (typeof jobId === "string") {
-        progressEmitter.on(jobId, (data) => {
-            res.write(`data: ${JSON.stringify(data)}\n\n`);
-        });
-    } else {
-        throw new ApiError(400, "jobId should be string, invalid format");
-    }
+    progressEmitter.on("end", (data) => {
+        res.write(`event: end\ndata: ${JSON.stringify(data)}\n\n`);
+    });
 
     req.on("close", () => {
-        progressEmitter.removeAllListeners(jobId as string);
+        progressEmitter.removeAllListeners();
     });
 });

@@ -1,109 +1,20 @@
 import "dotenv/config";
 
-import path from "node:path";
-import fs from "fs";
-import { ApiError } from "../../../utils/apiError.js";
-import { ZipArchive } from "archiver";
-import { EventEmitter } from "events";
-
-import { PassThrough } from "node:stream";
-import { Upload } from "@aws-sdk/lib-storage";
-import { s3Client } from "../../../app.js";
-import ffmpeg from "fluent-ffmpeg";
-
-const compressedDir = "tmp/compressed";
-if (!fs.existsSync(compressedDir)) {
-    fs.mkdirSync(compressedDir, { recursive: true });
-}
-
-export const progressEmitter = new EventEmitter();
+import { flowProducer, VIDEO_QUEUE_NAME } from "./compress.queue.js";
+import { ARCHIVE_QUEUE_NAME } from "../archive/archive.queue.js";
+import { JobData } from "./compress.type.js";
 
 class CompressService {
-    ffmpegCompress(
-        jobId: string,
-        inputPath: string,
-        outputPath: string,
-    ): Promise<string> {
-        return new Promise((resolve, reject) => {
-            ffmpeg(inputPath)
-                .videoCodec("libx264")
-                .outputOptions(["-crf 28", "-preset medium"])
-                .audioCodec("aac")
-                .audioBitrate("128k")
-                .on("progress", (progress) => {
-                    progressEmitter.emit(jobId, {
-                        jobId: jobId,
-                        progress: Number(progress.percent?.toFixed(1)) || 0,
-                    });
-                })
-                .on("end", () => {
-                    resolve(outputPath);
-                    progressEmitter.emit(jobId, {
-                        jobId: jobId,
-                        progress: 100,
-                    });
-                })
-                .on("error", (err) => {
-                    reject(new ApiError(500, `FFmpeg error: ${err.message}`));
-                })
-                .save(outputPath);
+    async compressAndArchive(files: JobData[]) {
+        await flowProducer.add({
+            name: "archive-videos",
+            queueName: ARCHIVE_QUEUE_NAME,
+            children: files.map((file) => ({
+                name: "compress-video",
+                queueName: VIDEO_QUEUE_NAME,
+                data: file,
+            })),
         });
-    }
-
-    async archiveAndStreamCompressedVideos(
-        files: { outputPath: string; originalName: string }[],
-        res: NodeJS.WritableStream,
-    ) {
-        const archive = new ZipArchive();
-        archive.on("error", (err) => {
-            // TODO: return error response
-            throw err;
-        });
-
-        for (const { outputPath, originalName } of files) {
-            archive.file(outputPath, { name: originalName });
-        }
-
-        const s3Stream = new PassThrough();
-        const s3Key = `archives/${new Date().toISOString()}-compressed-videos.zip`;
-
-        const s3Upload = new Upload({
-            client: s3Client,
-            params: {
-                Bucket: process.env.S3_BUCKET,
-                Key: s3Key,
-                Body: s3Stream,
-                ContentType: "application/zip",
-            },
-        });
-
-        archive.pipe(s3Stream);
-        archive.pipe(res);
-
-        await Promise.all([archive.finalize(), s3Upload.done()]).catch(
-            (error) => {
-                // TODO : Return error response
-                console.log("Failed to archive :: ", error);
-            },
-        );
-    }
-
-    async compressBatch(jobs: Map<string, Express.Multer.File>) {
-        const compressPromises = [...jobs].map(async ([jobId, file]) => {
-            const outputPath = path.join(
-                compressedDir,
-                `compressed-${file.originalname}`,
-            );
-            await this.ffmpegCompress(jobId, file.path, outputPath);
-            return {
-                outputPath,
-                originalName: file.originalname,
-                inputPath: file.path,
-            };
-        });
-
-        const results = await Promise.all(compressPromises);
-        return results;
     }
 }
 

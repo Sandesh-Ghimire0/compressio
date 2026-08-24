@@ -5,6 +5,6 @@ import { compressVideo, sendProgress } from "./compress.controller.js";
 const compressRouter = Router();
 
 compressRouter.route("/").post(upload.array('videos'), compressVideo);
-compressRouter.route("/progress/:jobId").get(sendProgress)
+compressRouter.route("/progress").get(sendProgress)
 
 export { compressRouter };
