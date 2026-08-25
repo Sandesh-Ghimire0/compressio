@@ -8,13 +8,18 @@ This is a full stack web app built using React and Express. The main functionali
 - **Convert to zip**: when the compression is completed, all videos are archived in a zip file
 - **Download zip**: as soon vidoe compressing completed users can download the zip file.
 - **Saved in s3 Bucket**:zip files are stored  in s3 Buckets, users can see all the archives and download them from s3 bucket.
+- **Job Queues**: Implemented job queues to handle heavy task like compressing videos
 
 
 ## Tech Stack
 - **Frontend**: React, axios, tailwindcss
-- **Backend**: aws-sdk, archiver, express, multer, fluent-ffmpeg
+- **Backend**: aws-sdk, archiver, express, multer, fluent-ffmpeg, bullmq, ioredis
 - **storage**: AWS s3 bucket
 - **Deployment**: AWS, Github Action, Docker, EC2 instance
+
+
+## System Architecture
+![System Architecture ](./frontend/src/assets/image5.png)
 
 ## Screenshots
 ![ Image 1 ](./frontend/src/assets/image1.png)
