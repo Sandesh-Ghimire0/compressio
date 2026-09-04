@@ -1,11 +1,12 @@
 import { GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3Client } from "../../../config/s3.js";
+import { ENV } from "../../../env.js";
 
 class ArchiveService {
     async getAllVideoArchives() {
         const command = new ListObjectsV2Command({
-            Bucket: process.env.S3_BUCKET,
+            Bucket: ENV.S3_BUCKET,
             Prefix: "archives/",
         });
 
@@ -21,7 +22,7 @@ class ArchiveService {
 
     async getPresingedUrl(key: string) {
         const getObjParams = {
-            Bucket: process.env.S3_BUCKET,
+            Bucket: ENV.S3_BUCKET,
             Key: key,
         };
         const command = new GetObjectCommand(getObjParams);

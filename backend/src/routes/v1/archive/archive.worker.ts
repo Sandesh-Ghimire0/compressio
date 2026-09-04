@@ -5,6 +5,7 @@ import { ZipArchive } from "archiver";
 import { PassThrough } from "node:stream";
 import { Upload } from "@aws-sdk/lib-storage";
 import { s3Client } from "../../../config/s3.js";
+import { ENV } from "../../../env.js";
 
 const archiveWorker = new Worker(
     ARCHIVE_QUEUE_NAME,
@@ -29,7 +30,7 @@ const archiveWorker = new Worker(
         const s3Upload = new Upload({
             client: s3Client,
             params: {
-                Bucket: process.env.S3_BUCKET,
+                Bucket: ENV.S3_BUCKET,
                 Key: s3Key,
                 Body: s3Stream,
                 ContentType: "application/zip",
