@@ -3,7 +3,7 @@ import "dotenv/config";
 import { z } from "zod";
 
 const envSchema = z.object({
-    NODE_ENV: z.enum(["production", "development"]),
+    NODE_ENV: z.enum(["production", "development","test"]),
     PORT: z.coerce.number().default(8000),
     FRONTEND_URL: z.url(),
     AWS_REGION: z.string(),
