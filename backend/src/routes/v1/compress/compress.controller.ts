@@ -37,28 +37,10 @@ export const compressVideo = asyncHandler(async (req, res) => {
         };
     });
 
-    // await Promise.all(jobs.map((job) => videoQueue.add("compress-video", job)));
     await compressService.compressAndArchive(filesMetaData);
     return res
         .status(200)
         .json(new ApiResponse(200, [], "Videos added to the queue"));
-
-    // if (jobs) {
-    //     const results = await compressService.compressBatch(jobs);
-
-    //     // this will directly stream the response
-    //     const key =
-    //         await compressService.archiveAndStreamCompressedVideos(results);
-    //     const preSignedURl = await archiveService.getPresingedUrl(key);
-
-    //     results.forEach((r) => {
-    //         fs.unlink(r.inputPath, () => {});
-    //         fs.unlink(r.outputPath, () => {});
-    //     });
-
-    // } else {
-    //     throw new ApiError(400, "Files not available");
-    // }
 });
 
 export const sendProgress = asyncHandler(async (req, res) => {
