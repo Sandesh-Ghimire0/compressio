@@ -80,25 +80,6 @@ const Compress = () => {
 
                 eventSource.close();
             });
-            // eventSource.onmessage = function (event) {
-            //     if (event.data === "end") {
-            //         eventSource.close();
-            //         return;
-            //     }
-            //     const data = JSON.parse(event.data);
-
-            //     setFiles((prev) =>
-            //         prev.map((f) => {
-            //             if (f.jobId === data.jobId) {
-            //                 return {
-            //                     ...f,
-            //                     progress: data.progress,
-            //                 };
-            //             }
-            //             return f;
-            //         }),
-            //     );
-            // };
 
             eventSource.onerror = () => {
                 eventSource.close();
